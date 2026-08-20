@@ -10,7 +10,7 @@ def scan_devices():
 
     try:
         result = subprocess.check_output(
-            ["ip", "neigh"],
+            ["ip", "neigh", "show"],
             text=True,
             stderr=subprocess.DEVNULL
         )
