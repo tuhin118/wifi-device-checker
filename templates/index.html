@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Fi Device Checker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 25px 15px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 25px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            border: none;
+            padding: 11px 18px;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .count {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .devices {
+            display: grid;
+            gap: 15px;
+        }
+
+        .device {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 18px;
+            border: 1px solid #334155;
+        }
+
+        .device h3 {
+            margin-top: 0;
+            color: #60a5fa;
+        }
+
+        .info {
+            margin: 7px 0;
+            color: #cbd5e1;
+        }
+
+        .label {
+            color: #94a3b8;
+            display: inline-block;
+            min-width: 120px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            background: #1e293b;
+            border-radius: 12px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 600px) {
+            .top {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>📡 Wi-Fi Device Checker</h1>
+
+    <div class="subtitle">
+        Connected devices on your local network
+    </div>
+
+    <div class="top">
+        <div class="count">
+            Devices Found: <span id="count">0</span>
+        </div>
+
+        <button onclick="scanDevices()">
+            🔄 Scan Network
+        </button>
+    </div>
+
+    <div id="devices" class="devices">
+        <div class="empty">
+            Click "Scan Network" to find devices.
+        </div>
+    </div>
+
+</div>
+
+<script>
+async function scanDevices() {
+
+    const container = document.getElementById("devices");
+    const count = document.getElementById("count");
+
+    container.innerHTML = `
+        <div class="empty">
+            🔍 Scanning local network...
+        </div>
+    `;
+
+    try {
+
+        const response = await fetch("/api/devices");
+        const devices = await response.json();
+
+        count.textContent = devices.length;
+
+        if (devices.length === 0) {
+            container.innerHTML = `
+                <div class="empty">
+                    No devices found.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = "";
+
+        devices.forEach((device, index) => {
+
+            const card = document.createElement("div");
+            card.className = "device";
+
+            card.innerHTML = `
+                <h3>📱 Device ${index + 1}</h3>
+
+                <div class="info">
+                    <span class="label">IP Address:</span>
+                    ${device.ip}
+                </div>
+
+                <div class="info">
+                    <span class="label">MAC Address:</span>
+                    ${device.mac}
+                </div>
+
+                <div class="info">
+                    <span class="label">Hostname:</span>
+                    ${device.hostname}
+                </div>
+
+                <div class="info">
+                    <span class="label">Manufacturer:</span>
+                    ${device.manufacturer}
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+
+    } catch (error) {
+
+        container.innerHTML = `
+            <div class="empty">
+                ❌ Unable to scan the network.
+            </div>
+        `;
+
+        console.error(error);
+    }
+}
+</script>
+
+</body>
+</html>
